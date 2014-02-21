@@ -525,7 +525,7 @@ namespace gnd {
 			int fd;
 			FILEHEADER fheader;
 			INFOHEADER iheader;
-			const size_t pixlsize = 8;
+			const size_t pixlsize = 4;
 			size_t pad;
 
 
@@ -558,7 +558,6 @@ namespace gnd {
 				if( ::read(fd, &iheader.biClrUsed, sizeof(uint32_t) )			< (signed) sizeof(uint32_t) )		return -2;
 				if( ::read(fd, &iheader.biClrImporant, sizeof(uint32_t) )		< (signed) sizeof(uint32_t) )		return -2;
 			} // <--- info header
-
 
 			{ // ---> set data
 				unsigned char d;	// dummy

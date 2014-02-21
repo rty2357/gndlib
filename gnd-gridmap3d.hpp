@@ -27,6 +27,7 @@
  * @ingroup GNDStorage
  */
 
+#define gridmap3d GridMap3D
 // ---> constant value definition
 namespace gnd { // ---> namespace gnd
 	namespace GridMap3D { // ---> namespace GridMap

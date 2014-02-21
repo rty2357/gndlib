@@ -91,7 +91,7 @@ namespace gnd {
 
 		/**
 		 * @brief begin
-		 * @param[in] id: clock
+		 * @param[in] id: clock(CLOCK_REALTIME)
 		 * @param[in]  c: cycle
 		 * @param[in]  o: offset
 		 */

@@ -159,7 +159,7 @@ struct map_pixel {
 	matrix::fixed< PosDim,1 > mean;
 	/// inverse matrix of covariance
 	matrix::fixed< PosDim,PosDim > inv_cov;
-	/// weight ( N / sqrt(|Sigma|)  )
+	/// weight ( N / sqrt(|Sigma|)  ) * eta
 	double K;
 	/// number of points
 	uint64_t N;
@@ -218,7 +218,7 @@ int counting_map(cmap_t *m, double x, double y);
 
 int update_map(cmap_t *cnt, map_t *map, double x, double y, double err = ErrorMargin );
 int update_ndt_map(cmap_t *c, map_t *m, double x, double y);
-int build_map(map_t *map, cmap_t *cnt, double err = ErrorMargin, double sr = 0, double *max = 0);
+int build_map(map_t *map, cmap_t *cnt, double err = ErrorMargin, double sr = 0, uint32_t np = 100);
 int build_ndt_map(map_t *map, cmap_t *cnt, double err = ErrorMargin);
 int destroy_map(map_t *m);
 
@@ -576,18 +576,16 @@ int update_ndt_map(cmap_t *cnt, map_t *map, double x, double y, double err)
  * @param[out]   maxk : maximum gain
  */
 inline
-int build_map(map_t *map, cmap_t *cnt, double err, double sr, double *maxk) {
+int build_map(map_t *map, cmap_t *cnt, double err, double sr, uint32_t np) {
 	gnd_assert(!cnt, -1, "invalid null pointer");
 	gnd_assert(!map, -1, "map is null");
 
-	LogDebugf("Begin - int build_map(%p, %p, %lf, %lf)\n", map, cnt, err, maxk);
+	LogDebugf("Begin - int build_map(%p, %p, %lf, %lf)\n", map, cnt, err, np);
 	LogIndent();
 
 	{ // ---> operation
 		matrix::fixed<PosDim,PosDim> ws2x2;	// workspace 2x2 matrix
 		matrix::fixed<PosDim,PosDim> cov;	// covariance matrix
-
-		if( maxk ) *maxk = 0;
 
 		// ---> for each plane
 		for(size_t i = 0; i < PlaneNum; i++){
@@ -597,7 +595,7 @@ int build_map(map_t *map, cmap_t *cnt, double err, double sr, double *maxk) {
 				if( map->plane[i].xrsl() != cnt->plane[i].xrsl() || map->plane[i].yrsl() != cnt->plane[i].yrsl() ){
 					LogDebug("fail to memeory allocate\n");
 					LogUnindent();
-					LogDebugf("Fail  - int build_map(%p, %p, %lf, %lf)\n", map, cnt, err, maxk);
+					LogDebugf("Fail  - int build_map(%p, %p, %lf, %lf)\n", map, cnt, err, np);
 					return -1;
 				}
 			}
@@ -657,6 +655,7 @@ int build_map(map_t *map, cmap_t *cnt, double err, double sr, double *maxk) {
 
 					{ // ---> compute evaluation gain
 						double det = 0;
+						double inv_normal = 0;
 						uint64_t sum;
 
 						// ---> obtain the sum of laser points in the sensor range for each plane
@@ -692,12 +691,35 @@ int build_map(map_t *map, cmap_t *cnt, double err, double sr, double *maxk) {
 							continue;
 						}
 
-						pp->K = ((double) (cpp->cnt) / (double)sum) / ( ::sqrt(det) ) ;
+						if( np > 0 ){ // --->  normalize factor
+							double k = 1.0 / (2.0 * M_PI * ( ::sqrt(det) ));
+							for( uint32_t ix = 0; ix < np; ix++ ){
+								for( uint32_t iy = 0; iy < np; iy++ ){
+									gnd::vector::fixed_column<2> xx;
+									gnd::vector::fixed_row<2> ws1x2;
+									gnd::matrix::fixed<1,1> ws1x1;
+									xx[0] = (map->plane[i].xrsl() * ix / np) - (map->plane[i].xrsl() / 2.0);
+									xx[1] = (map->plane[i].yrsl() * iy / np) - (map->plane[i].yrsl() / 2.0);
 
-						if( maxk && *maxk < pp->K ){
-							*maxk = pp->K;
+									// difference from mean
+									gnd::matrix::sub(&xx, &pp->mean, &xx);
+									// compute likelihood
+									gnd::matrix::prod_transpose1(&xx, &pp->inv_cov, &ws1x2);
+									gnd::matrix::prod(&ws1x2, &xx, &ws1x1);
+									ws1x1[0][0] = k * ::exp( - ws1x1[0][0] / 2.0) * (map->plane[i].xrsl() * map->plane[i].yrsl()) / ((double)np * (double)np);
+//									::fprintf(stdout, "%lf\n", ws1x1[0][0]);
+									inv_normal += ws1x1[0][0];
+								}
+							}
+						} // <---  normalize factor
+
+						// obtain determinant of co-variance matrix
+						if( inv_normal <= 0) {
+							pp->K = 0;
+							continue;
 						}
 
+						pp->K = ((double) (cpp->cnt) / (double)sum) / ( ::sqrt(det) );
 					} // <--- compute evaluation gain
 
 				} // <-- for each column
@@ -707,7 +729,7 @@ int build_map(map_t *map, cmap_t *cnt, double err, double sr, double *maxk) {
 	}  // <--- operation
 
 	LogUnindent();
-	LogDebugf("End   - int build_map(%p, %p, %lf, %lf)\n", map, cnt, err, maxk);
+	LogDebugf("End   - int build_map(%p, %p, %lf, %lf)\n", map, cnt, err, np);
 	return 0;
 }
 
