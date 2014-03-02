@@ -10,6 +10,8 @@
 #include "gnd-matrix-base.hpp"
 
 
+#ifndef GND_LINALG
+#define GND_LINALG
 /**
  * @ifnot GNDLinAlg
  * @defgroup GNDLinAlg linear-algebras
@@ -112,3 +114,4 @@ namespace gnd {
 	} // <--- namespace linalg
 } // <--- namespace gnd
 
+#endif
