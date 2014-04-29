@@ -18,7 +18,7 @@ namespace gnd {
 		enum {
 			INVALID = -1,
 			SINGLE = 0,
-			RAW,
+			ROW,
 			COLUMN,
 		};
 
@@ -33,9 +33,9 @@ namespace gnd {
 #define _gnd_vector_size_(vct)			( _gnd_matrix_row_(vct) * _gnd_matrix_column_(vct) )
 
 #define gnd_vector_state(vct)	\
-		( (_gnd_matrix_raw_(vct) == 0 || _gnd_matrix_column_(vct) == 0) ? gnd::vector::INVALID :	\
-		(	_gnd_matrix_raw_(vct) == 1 && _gnd_matrix_column_(vct) == 1) ? gnd::vector::SINGLE :	\
-			_gnd_matrix_raw_(vct) != 1 ? gnd::vector::RAW : 										\
+		( (_gnd_matrix_row_(vct) == 0 || _gnd_matrix_column_(vct) == 0) ? gnd::vector::INVALID :	\
+		(	_gnd_matrix_row_(vct) == 1 && _gnd_matrix_column_(vct) == 1) ? gnd::vector::SINGLE :	\
+			_gnd_matrix_row_(vct) != 1 ? gnd::vector::ROW : 										\
 			_gnd_matrix_column_(vct) != 1 ? gnd::vector::COLUMN : gnd::vector::INVALID				\
 		)
 
@@ -179,15 +179,27 @@ namespace gnd { // ---> namespace gnd
 		}
 
 		/**
-		 * @brief assign vec with buffer
+		 * @brief assign vec with buffer as column vector
 		 * @param [in/out]	vec : assign vector
 		 * @param     [in] buf : buffer
 		 * @param     [in]  s : size
 		 */
 		inline
-		int assign ( flex *vec, component_t *buf, const size_t s)
+		int assign_column_vector ( flex *vec, component_t *buf, const size_t s)
 		{
 			return matrix::assign(vec, buf, 1, s);
+		}
+
+		/**
+		 * @brief assign vec with buffer as row vector
+		 * @param [in/out]　vec : assign vector
+		 * @param     [in] buf : buffer
+		 * @param     [in]  s : size
+		 */
+		inline
+		int assign_row_vector ( flex *vec, component_t *buf, const size_t s)
+		{
+			return matrix::assign(vec, buf, s, 1);
 		}
 
 
@@ -356,7 +368,7 @@ namespace gnd { // ---> namespace gnd
 			gnd_warnning(!gnd_vector_state(vec) != INVALID, "is not vector");
 			gnd_assert(!gnd_vector_exist(vec, i), 0, "out of buffer");
 
-			if(gnd_vector_is_raw(vec))
+			if(gnd_vector_is_row(vec))
 				return matrix::set(vec, 0, i, v);
 			else
 				return matrix::set(vec, i, 0, v);
@@ -426,7 +438,7 @@ namespace gnd { // ---> namespace gnd
 			gnd_assert(!vec, 0, "null pointer");
 			gnd_warnning(!gnd_matrix_is_vector(vec), "is not vector");
 
-			if(gnd_vector_is_raw(vec))
+			if(gnd_vector_is_row(vec))
 				return matrix::swap_column(vec, i, j);
 			else
 				return matrix::swap_row(vec, i, j);
@@ -480,7 +492,7 @@ namespace gnd { // ---> namespace gnd
 		{
 			gnd_assert(!vec, 0, "null pointer");
 			gnd_warnning(!gnd_matrix_is_vector(vec), "is not vector");
-			if(gnd_vector_is_raw(vec))
+			if(gnd_vector_is_row(vec))
 				return submatrix_sqnorm_row(vec, 0, i, l, v);
 			else
 				return submatrix_sqnorm_column(vec, i, 0, l, v);
@@ -540,7 +552,7 @@ namespace gnd { // ---> namespace gnd
 		{
 			gnd_assert(!vec, 0, "null pointer");
 			gnd_warnning(!gnd_matrix_is_vector(vec), "is not vector");
-			if(gnd_vector_is_raw(vec))
+			if(gnd_vector_is_row(vec))
 				return norm_row(vec, v);
 			else
 				return norm_column(vec, v);
