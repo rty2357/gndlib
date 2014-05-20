@@ -8,6 +8,7 @@
 #ifndef GND_QUEUE_HPP_
 #define GND_QUEUE_HPP_
 
+#include <stdint.h>
 #include <string.h>
 
 #include "gnd-lib-error.h"
