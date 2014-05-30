@@ -1278,7 +1278,7 @@ namespace gnd {
 		 * @param[out] bmp : gray scale bit map
 		 * @param[in] map : map data
 		 * @param[in] ps : pixel size
-		 * @param[in] sr : smoothing parameter ( sensor range[m])
+		 * @param[in] sr : sensor range[m]
 		 * @param[in] cp : contranst parameter
 		 */
 		inline
@@ -2386,29 +2386,32 @@ int optimize_monte_calro_method::iterate(matrix::fixed<3,1> *d, matrix::fixed<3,
 				matrix::prod( &particles[i].coordm,  &p, &x );
 
 				lkf::likelihood(_map, x[0][0], x[1][0], &lk);
-				particles[i].likelihood += lk;
+				particles[i].likelihood += ::log( (double)lk + DBL_EPSILON );
 			}
 		} // ---> loop for compute likelihood
 
-
-		// ---> likelihood sum and get max
-		max = 0.0;
+		// ---> get max
+		max = -DBL_MAX;;
 		imax = 0;
-		for( i = 0; i < (unsigned)particles.size(); i++){
-			particles[i].likelihood /= _points.size();
-
+		for( i = 0 ; i <  (unsigned)particles.size(); i++ ) {
 			// get max
 			if( max < particles[i].likelihood )	{
 				max = particles[i].likelihood;
 				imax = i;
 			}
+		}
+		// <--- get max
+
+		// ---> likelihood sum
+		for( i = 0; i < (unsigned)particles.size(); i++){
+			particles[i].likelihood = ::exp( particles[i].likelihood - max + DBL_EPSILON) + DBL_EPSILON;
 
 			// sum
 			sum += particles[i].likelihood;
 
 			LogVerbosef("      : particle (%lf, %lf, %lf) lkh = %lf\n",
 					particles[i].pos[0], particles[i].pos[1], particles[i].pos[2], particles[i].likelihood);
-		} // ---> likelihood sum and get max
+		} // ---> likelihood sum
 
 		// if sum == zero, error
 		gnd_error( sum == 0, -1, "all likelihood is 0" );
@@ -2478,7 +2481,8 @@ int optimize_monte_calro_method::iterate(matrix::fixed<3,1> *d, matrix::fixed<3,
 
 			// set max
 			particles.push_back(&_ws_resmpl[0]);
-			// resample
+
+			// ---> add random value following error
 			for( i = particles.size(); i < _ws_resmpl.size(); i++ ) {
 				// random
 				ws3x1[0] = random_gaussian(1.0);
@@ -2497,8 +2501,7 @@ int optimize_monte_calro_method::iterate(matrix::fixed<3,1> *d, matrix::fixed<3,
 
 				// set
 				particles.push_back(&p);
-			}
-
+			} // ---> add random value following error
 
 		} // <--- resampling
 	} // <--- operate

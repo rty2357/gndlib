@@ -69,7 +69,7 @@ int main( int argc, char* argv[] ) {
 			{0, 0, 0}, 								// default value
 			"initial position for scan matching (x[m], y[m], theta[deg])" 	// comment
 	};
-	gnd::conf::parameter<uint64_t		> nparticle = {
+	gnd::conf::parameter<int> nparticle = {
 			"number-of-particle", 							// item name
 			1000, 					// default value
 			"number of particles" 	// comment
