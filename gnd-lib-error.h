@@ -129,11 +129,11 @@ extern "C" {
 #endif
 
 
-#include <sys/time.h>
 
 #ifdef NDEBUG
 #define gnd_test_timer(code, msg)		code
-#else
+#elif __linux__
+#include <sys/time.h>
 #define gnd_test_timer(code, msg)											\
 	do {																	\
 		struct timeval st, end, tm;											\
@@ -143,6 +143,8 @@ extern "C" {
 		timersub(&end, &st, &tm);											\
 		fprintf(stderr, "%s %ld.%06ld\n", msg, tm.tv_sec, tm.tv_usec);		\
 	}while(0)
+#elif __WIN32
+#define gnd_test_timer(code, msg)		code
 #endif
 
 

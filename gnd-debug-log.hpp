@@ -11,7 +11,10 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdarg.h>
+#ifdef __linux__
 #include <sys/time.h>
+#elif __WIN32
+#endif
 
 
 /**
@@ -204,6 +207,7 @@ namespace GND_DEBUG_LOG_NAMESPACE3 {
 			return;
 		}
 
+#ifdef __linux__
 		{ // ---> operation
 			char form[512];
 			char indent[__g_GND_DEBUGLOG_INDENTMAX__*__g_GND_DEBUGLOG_INDENTSPACE__ + 1];
@@ -219,6 +223,21 @@ namespace GND_DEBUG_LOG_NAMESPACE3 {
 			vfprintf(DebugLogger::d.f, form, args);
 			fflush(DebugLogger::d.f);
 		} // <--- operation
+#elif __WIN32
+		{ // ---> operation
+			char form[512];
+			char indent[__g_GND_DEBUGLOG_INDENTMAX__*__g_GND_DEBUGLOG_INDENTSPACE__ + 1];
+			va_list args;
+			va_start(args, f);
+
+			if( __g_GND_DEBUGLOG_INDENT_LEVEL__ )
+				memset(indent, ' ', __g_GND_DEBUGLOG_INDENTSPACE__ * __g_GND_DEBUGLOG_INDENT_LEVEL__);
+			indent[__g_GND_DEBUGLOG_INDENTSPACE__ * __g_GND_DEBUGLOG_INDENT_LEVEL__] = '\0';
+			sprintf(form, " %s%s",  indent, f);
+			vfprintf(DebugLogger::d.f, form, args);
+			fflush(DebugLogger::d.f);
+		} // <--- operation
+#endif
 	}
 
 #ifdef GND_DEBUG_LOG_NAMESPACE3
