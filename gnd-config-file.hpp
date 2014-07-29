@@ -47,9 +47,9 @@ namespace gnd {
 // ---> constant value definition
 namespace gnd {
 	namespace conf {
-		static const uint32_t ItemBufferSize = 32;		///<! item buffer size
-		static const uint32_t ValueBufferSize = 256;		///<! buffer size
-		static const uint32_t CommentBufferSize = 512;	///<! buffer size
+		static const uint32_t ItemBufferSize = 128;		///<! item buffer size
+		static const uint32_t ValueBufferSize = 512;	///<! buffer size
+		static const uint32_t CommentBufferSize = 1024;	///<! buffer size
 
 		static const char TokenSubst = '=';				///<! substitution token
 		static const char TokenComment = '#';			///<! comment token
@@ -355,9 +355,9 @@ int gnd::conf::configuration::child_pop_front(configuration* dest)
 inline
 gnd::conf::configuration* gnd::conf::configuration::child_find(const char* n, const char* v)
 {
-	uint64_t i;
+	int i;
 
-	for(i = 0; i < _children.size(); i++){
+	for(i = 0; i < (int)_children.size(); i++){
 		if( ::strncmp(_children[i]._item, n, sizeof(_children[i]._item)) == 0 &&
 				(v == 0 || ::strncmp(_children[i]._value, v, sizeof(_children[i]._value)) == 0 )) {
 			return &_children[i];
@@ -377,7 +377,7 @@ gnd::conf::configuration* gnd::conf::configuration::child_find(const char* n, co
 inline
 int gnd::conf::configuration::nchild()
 {
-	return _children.size();
+	return (int)_children.size();
 }
 
 
@@ -438,9 +438,9 @@ gnd::conf::configuration& gnd::conf::configuration::operator[](int i)
 inline
 int gnd::conf::configuration::show(FILE* fp, const char flags)
 {
-	uint64_t i;
+	int i;
 
-	for(i = 0; i < _children.size(); i++){
+	for(i = 0; i < (int)_children.size(); i++){
 		_children[i].__show__(fp, 0, flags);
 	}
 	return 0;
@@ -455,7 +455,7 @@ int gnd::conf::configuration::show(FILE* fp, const char flags)
 int gnd::conf::configuration::__show__(FILE* fp, const int depth, const char flags)
 {
 	char head[32];
-	uint64_t i;
+	int i;
 	bool nl_flg = false;	// new line flag
 
 
@@ -472,7 +472,7 @@ int gnd::conf::configuration::__show__(FILE* fp, const int depth, const char fla
 
 
 	::memset(head, 0, sizeof(head));
-	for(i = 0; (signed)i < depth; i++){
+	for(i = 0; i < depth; i++){
 		head[i] = '\t';
 	}
 	if(fp) ::fprintf(fp, "%s", head);
@@ -1020,7 +1020,7 @@ namespace gnd {
 					param->value = false;
 				}
 				else {
-					param->value = ::atoi(p->value());
+					param->value = ::atoi(p->value()) != 0;
 				}
 				::memcpy(param->comment, conf->comment(), sizeof(param->comment));
 			}
@@ -1147,7 +1147,7 @@ namespace gnd {
 
 			p = conf->child_find(param->item);
 			if(p){
-				param->value = ::atof( p->value() );
+				param->value = (float)::atof( p->value() );
 				::memcpy(param->comment, conf->comment(), sizeof(param->comment));
 			}
 			else {

@@ -303,7 +303,7 @@ namespace gnd {
 		__copy__(_data + i, src, n);
 		_n += n;
 
-		return i;
+		return (int)i;
 	}
 
 

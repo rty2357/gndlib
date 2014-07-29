@@ -19,6 +19,7 @@
 
 #define gnd_sign(x)				( ((x) < 0) ? -1 : 1 )
 
+#define gnd_round(x)			( (int) ((x) + 0.5) )
 
 // ---> distance unit
 #define gnd_unit_mm2cm_scale	(10.0)
@@ -254,5 +255,11 @@
 		}																	\
 	}while(0)
 
+
+#define gnd_loop_period(cur, st, cyc) \
+	(  floor( (cur - st) / cyc ) )
+
+#define gnd_loop_next(cur, st, cyc) \
+	(  st + (gnd_loop_period(cur, st, cyc) + 1) * cyc )
 
 #endif /* GND_UTIL_H_ */

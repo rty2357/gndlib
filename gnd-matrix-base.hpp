@@ -207,7 +207,7 @@ namespace gnd { // ---> namespace gnd
 		 * @param[in]     r : row index
 		 * @param[in]    rs : row size
 		 */
-		template< uint32_t R, uint32_t C >
+		template< const uint32_t R, const uint32_t C >
 		inline
 		int assign ( flex *dest, fixed<R,C> *src, const uint32_t row, const uint32_t rs)
 		{
@@ -628,7 +628,7 @@ namespace gnd { // ---> namespace gnd
 		 * @return ==0 : success
 		 * @return  <0 : fail
 		 */
-		template < uint32_t R, uint32_t C >
+		template < const uint32_t R, const uint32_t C >
 		inline int copy( fixed<R,C> *dest, const fixed<R,C> *src)
 		{
 			gnd_assert((!dest || !src), -1, "null pointer");
@@ -934,7 +934,7 @@ namespace gnd { // ---> namespace gnd
 		 * @return ==0 : success
 		 * @return  <0 : fail
 		 */
-		template < uint32_t R, uint32_t C >
+		template < const uint32_t R, const uint32_t C >
 		inline int add(const fixed<R,C> *m1, const fixed<R,C> *m2, fixed<R,C> *o)
 		{
 			gnd_assert((!m1 || !m2 || !o), -1, "null pointer");
@@ -964,7 +964,7 @@ namespace gnd { // ---> namespace gnd
 		 * @return ==0 : success
 		 * @return  <0 : fail
 		 */
-		template < uint32_t R, uint32_t C >
+		template < const uint32_t R, const uint32_t C >
 		inline int add_transpose1(const fixed<C,R> *m1, const fixed<R,C> *m2, fixed<R,C> *o)
 		{
 			gnd_assert((!m1 || !m2 || !o), -1, "null pointer");
@@ -996,7 +996,7 @@ namespace gnd { // ---> namespace gnd
 		 * @return ==0 : success
 		 * @return  <0 : fail
 		 */
-		template < uint32_t R, uint32_t C >
+		template < const uint32_t R, const uint32_t C >
 		inline int add_transpose2(const fixed<R,C> *m1, const fixed<C,R> *m2, fixed<R,C> *o)
 		{
 			gnd_assert((!m1 || !m2 || !o), -1, "null pointer");
@@ -1265,7 +1265,7 @@ namespace gnd { // ---> namespace gnd
 		 * @return ==0 : success
 		 * @return  <0 : fail
 		 */
-		template < uint32_t R, uint32_t C >
+		template < const uint32_t R, const uint32_t C >
 		inline int sub_transpose1(const fixed<C,R> *m1, const fixed<R,C> *m2, fixed<R,C> *o)
 		{
 			gnd_assert((!m1 || !m2 || !o), -1, "null pointer");
@@ -1297,7 +1297,7 @@ namespace gnd { // ---> namespace gnd
 		 * @return ==0 : success
 		 * @return  <0 : fail
 		 */
-		template < uint32_t R, uint32_t C >
+		template < const uint32_t R, const uint32_t C >
 		inline int sub_transpose2(const fixed<R,C> *m1, const fixed<C,R> *m2, fixed<R,C> *o)
 		{
 			gnd_assert((!m1 || !m2 || !o), -1, "null pointer");
@@ -1390,7 +1390,7 @@ namespace gnd { // ---> namespace gnd
 				return submatrix_prod(m1, 0, 0, m2, 0, 0, m, n, l, o, 0, 0);
 			} // <--- operation
 		}
-		template < uint32_t M, uint32_t N, uint32_t L >
+		template < const uint32_t M, const uint32_t N, const uint32_t L >
 		inline int prod(const fixed<M,N> *m1, const fixed<N,L> *m2, fixed<M,L> *o)
 		{
 			gnd_assert((!m1 || !m2 || !o), -1, "null pointer");
@@ -1626,7 +1626,7 @@ namespace gnd { // ---> namespace gnd
 			} // <--- opeartion
 		}
 
-		template < uint32_t R, uint32_t C >
+		template < const uint32_t R, const uint32_t C >
 		inline int scalar_prod(const fixed<R,C> *mt, const double v, fixed<R,C> *o)
 		{
 			gnd_assert((!mt || !o), -1, "null pointer");
@@ -2059,7 +2059,7 @@ namespace gnd { // ---> namespace gnd
 		 * @return ==0 : success
 		 * @return  <0 : fail
 		 */
-		template < uint32_t R, uint32_t C, typename MTRX >
+		template < const uint32_t R, const uint32_t C, typename MTRX >
 		inline int det(const fixed<R, C> *mt, component_t *v)
 		{
 			gnd_assert((!mt || !v), -1, "null pointer");
@@ -2135,7 +2135,7 @@ namespace gnd { // ---> namespace gnd
 		 * @return ==0 : success
 		 * @return  <0 : fail
 		 */
-		template < uint32_t R, uint32_t C >
+		template < const uint32_t R, const uint32_t C >
 		inline int det(const fixed<R, C> *mt, double *v)
 		{
 			gnd_assert((!mt || !v), -1, "null pointer");
@@ -2394,7 +2394,7 @@ namespace gnd { // ---> namespace gnd
 		 * @return ==1 :
 		 * @return  <0 : fail
 		 */
-		template < uint32_t R, uint32_t C, typename MTRX >
+		template < const uint32_t R, const uint32_t C, typename MTRX >
 		inline int inverse(const fixed<R, C> *mt, MTRX *inv)
 		{
 			gnd_assert((!mt || !inv), -1, "null pointer");
@@ -2682,7 +2682,7 @@ namespace gnd { // ---> namespace gnd
 		 * @ingroup GNDMatrix
 		 * @brief dummy constructor
 		 */
-		template<uint32_t R, uint32_t C>
+		template< const uint32_t R, const uint32_t C>
 		inline
 		fixed<R,C>::fixed()
 		{
@@ -2696,7 +2696,7 @@ namespace gnd { // ---> namespace gnd
 		 * @param[in] src : source data
 		 * @param[in]   l : length of source data
 		 */
-		template<uint32_t R, uint32_t C>
+		template< const uint32_t R, const uint32_t C>
 		inline
 		fixed<R,C>::fixed(const component_t *src, uint32_t l)
 		{
@@ -2715,7 +2715,7 @@ namespace gnd { // ---> namespace gnd
 		 * @param[in] i : row index
 		 * @return row head pointer
 		 */
-		template<uint32_t R, uint32_t C>
+		template< const uint32_t R, const uint32_t C>
 		inline
 		double* fixed<R, C>::operator[](int i)
 		{

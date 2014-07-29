@@ -121,7 +121,7 @@ namespace gnd { // ---> namespace gnd
 		 * @ingroup GNDMatrix
 		 * @brief dummy constructor
 		 */
-		template< uint32_t R >
+		template< const uint32_t R >
 		inline
 		fixed_column<R>::fixed_column()
 		{
@@ -134,7 +134,7 @@ namespace gnd { // ---> namespace gnd
 		 * @param[in] i : row index
 		 * @return row head pointer
 		 */
-		template< uint32_t R >
+		template< const uint32_t R >
 		inline
 		double& fixed_column<R>::operator[](int i)
 		{
@@ -146,7 +146,7 @@ namespace gnd { // ---> namespace gnd
 		 * @ingroup GNDMatrix
 		 * @brief dummy constructor
 		 */
-		template< uint32_t C >
+		template< const uint32_t C >
 		inline
 		fixed_row<C>::fixed_row()
 		{
@@ -159,7 +159,7 @@ namespace gnd { // ---> namespace gnd
 		 * @param[in] i : row index
 		 * @return row head pointer
 		 */
-		template< uint32_t C >
+		template< const uint32_t C >
 		inline
 		double& fixed_row<C>::operator[](int i)
 		{
@@ -192,9 +192,9 @@ namespace gnd { // ---> namespace gnd
 
 		/**
 		 * @brief assign vec with buffer as row vector
-		 * @param [in/out]　vec : assign vector
+		 * @param [in/out] vec : assign vector
 		 * @param     [in] buf : buffer
-		 * @param     [in]  s : size
+		 * @param     [in]   s : size
 		 */
 		inline
 		int assign_row_vector ( flex *vec, component_t *buf, const size_t s)
