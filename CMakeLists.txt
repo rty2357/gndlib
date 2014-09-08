@@ -133,8 +133,8 @@ include_directories(
 # )
 
 ## Mark cpp header files for installation
- install(DIRECTORY include/gnd/
-   DESTINATION gnd
+ install(DIRECTORY include/
+   DESTINATION ${CATKIN_GLOBAL_INCLUDE_DESTINATION}
    FILES_MATCHING PATTERN "*.h"
    PATTERN "*.hpp"
    PATTERN ".svn" EXCLUDE
