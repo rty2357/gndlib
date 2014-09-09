@@ -6,15 +6,15 @@
  */
 
 #include <stdio.h>
-#include "gnd-lkf.hpp"
+#include "gnd-lssmap-base.hpp"
 #include "float.h"
 
 int main(int argc, char* argv[]) {
 	FILE						*fp;		// data file of laser scanner
-	gnd::lkf::cmap_t		cnt_map;	// laser scanner data collection map (it use for building environment map)
+	gnd::lssmap::cmap_t		cnt_map;	// laser scanner data collection map (it use for building environment map)
 
 
-	gnd::lkf::debug_set_log_level(2);
+	gnd::lssmap::debug_set_log_level(2);
 	gnd::gridmap::debug_set_log_level(2);
 
 	{ // ---> initialize
@@ -28,8 +28,8 @@ int main(int argc, char* argv[]) {
 			return 1;
 		}
 
-		gnd::lkf::init_counting_map(&cnt_map, 1.0, 10 );
-		//		gnd::lkf::read_counting_map(&cnt_map, "lkf-map1");
+		gnd::lssmap::init_counting_map(&cnt_map, 1.0, 10 );
+		//		gnd::lssmap::read_counting_map(&cnt_map, "lssmap-map1");
 	} // <--- initialize
 
 
@@ -44,14 +44,14 @@ int main(int argc, char* argv[]) {
 			while( !::feof(fp)  ) {
 				// read data file
 				ret = ::fscanf(fp, "%lf %lf\n", &x, &y);
-				::fprintf(stdout, ".");
+                          fprintf(stdout, "%lf %lf\n", x, y);
 				// when read all data, break
-				if( ret < 0 ) break;
+				if( ret <= 0 ) break;
 				if( cnt % 1000 )
 					::fprintf(stdout, ".");
 				cnt++;
 				// counting
-				gnd::lkf::counting_map(&cnt_map, x, y);
+				gnd::lssmap::counting_map(&cnt_map, x, y);
 			} // ---> scanning loop (data fiile)
 			::fprintf(stdout, "\n");
 
@@ -66,29 +66,29 @@ int main(int argc, char* argv[]) {
 	{ // ---> finalize
 		gnd::bmp8_t bmp;
 		gnd::bmp32_t bmp32;
-		gnd::lkf::map_t			lkf;	// environment map for scan matching
+		gnd::lssmap::lssmap_t			lssmap;	// environment map for scan matching
 
 		// save counting map
 		// output in current directory
-		gnd::lkf::write_counting_map(&cnt_map, "./");
+		gnd::lssmap::write_counting_map(&cnt_map, "./");
 		::fprintf(stdout, "make counting map data observ-prob.**.cmap\n");
 
 
 		{ // ---> build bmp image (to visualize for human)
 			// build environmental map
-			gnd::lkf::build_map(&lkf, &cnt_map, 20, 100);
+			gnd::lssmap::build_map(&lssmap, &cnt_map, 20, 100);
 			::fprintf(stdout, "make bmp image\n");
 			// make bmp image: it show the likelihood field
-			gnd::lkf::build_bmp(&bmp, &lkf, 1.0 / 20);
+			gnd::lssmap::build_bmp(&bmp, &lssmap, 1.0 / 20);
 			// make bmp image: it show the likelihood field
-			gnd::lkf::build_bmp(&bmp32, &lkf, 1.0 / 20);
+			gnd::lssmap::build_bmp(&bmp32, &lssmap, 1.0 / 20);
 			// file out
 			gnd::bmp::write8("map-image8.bmp", &bmp);
 			// file out
 			gnd::bmp::write32("map-image32.bmp", &bmp32);
 
-			gnd::lkf::destroy_map(&lkf);
-			gnd::lkf::destroy_counting_map(&cnt_map);
+			gnd::lssmap::destroy_map(&lssmap);
+			gnd::lssmap::destroy_counting_map(&cnt_map);
 			{ // ---> origin
 				char fname[512];
 				FILE *fp = 0;

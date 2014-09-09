@@ -7,7 +7,7 @@
 
 
 #include <stdio.h>
-#include "gnd-lkf.hpp"
+#include "gnd-lssmap.hpp"
 #include "gnd-config-file.hpp"
 
 #ifdef __linux__
@@ -49,8 +49,8 @@ struct position {
 };
 
 int main( int argc, char* argv[] ) {
-	gnd::lkf::cmap_t				cmap;					// counting map
-	gnd::lkf::map_t					map;					// scan matching map
+	gnd::lssmap::cmap_t				cmap;					// counting map
+	gnd::lssmap::lssmap_t			lssmap;					// scan matching map
 	gnd::bmp32_t					bmp;					// bmp map (likelihood field)
 	struct position					*scandata;				// scan data
 	int								nscandata;
@@ -88,7 +88,7 @@ int main( int argc, char* argv[] ) {
 
 
 	{ // ---> debug mode
-		gnd::lkf::debug_set_log_level(2);
+		gnd::lssmap::debug_set_log_level(2);
 		gnd::gridmap::debug_set_log_level(2);
 	} // <--- debug mode
 
@@ -138,7 +138,7 @@ int main( int argc, char* argv[] ) {
 		}
 
 		// read counting map
-		ret = gnd::lkf::read_counting_map( &cmap, cmap_dir.value );
+		ret = gnd::lssmap::read_counting_map( &cmap, cmap_dir.value );
 		if( ret < 0 ) {
 			::fprintf(stderr, " error: fail to read counting map form directory \"%s\"\n", cmap_dir.value);
 			return 0;
@@ -208,14 +208,14 @@ int main( int argc, char* argv[] ) {
 		} // <--- read scan data file
 
 		// build scan matching map
-		ret = gnd::lkf::build_map( &map, &cmap, 30.0, 10 );
+		ret = gnd::lssmap::build_map( &lssmap, &cmap, 30.0, 10 );
 		if( ret < 0 ) {
 			::fprintf(stderr, " error: fail to build map\n");
 			return 0;
 		}
 
 		// build likelihood filed
-		ret = gnd::lkf::build_bmp( &bmp, &map, 0.05 );
+		ret = gnd::lssmap::build_bmp( &bmp, &lssmap, 0.05 );
 		if( ret < 0 ) {
 			::fprintf(stderr, " error: fail to build likelihood firled\n");
 			return 0;
@@ -331,8 +331,8 @@ int main( int argc, char* argv[] ) {
 		delete[] scandata;
 		delete[] particles;
 
-		gnd::lkf::destroy_counting_map(&cmap);
-		gnd::lkf::destroy_map(&map);
+		gnd::lssmap::destroy_counting_map(&cmap);
+		gnd::lssmap::destroy_map(&lssmap);
 	} // <--- finalize
 
 
