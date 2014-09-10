@@ -8,20 +8,17 @@
 #ifndef GND_BMP_HPP_
 #define GND_BMP_HPP_
 
+
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>
 #include <stdlib.h>
-#include <math.h>
-#include <sys/stat.h>
-#include <sys/types.h>
-#include <fcntl.h>
-#include <unistd.h>
-#include <errno.h>
 
 #include "gnd-gridmap.hpp"
 
-#include "gnd-wrap-sys.hpp"
+
+#include "gnd-multi-io.h"
+#include "gnd-multi-math.h"
 
 /**
  * @defgroup GNDBmp bitmap
@@ -241,8 +238,8 @@ namespace gnd {
 				iheader.biBitCount = 8 * pixlsize;
 				iheader.biCompression = 0;
 				iheader.biSizeImage = imagesize;
-				iheader.biXPixPerMeter = ::round( 1.0 / gm->xrsl() );
-				iheader.biYPixPerMeter = ::round( 1.0 / gm->yrsl() );
+				iheader.biXPixPerMeter = gnd_multi_round( 1.0 / gm->xrsl() );
+				iheader.biYPixPerMeter = gnd_multi_round( 1.0 / gm->yrsl() );
 				iheader.biClrUsed      = 0;
 				iheader.biClrImporant  = 0;
 
@@ -255,40 +252,39 @@ namespace gnd {
 				const unsigned char d = 0x00;	// dummy
 				RGBQUAD	rgb;
 
-				fd = open(fname, O_WRONLY | O_TRUNC | O_CREAT | gnd::wO_BINARY,
-						gnd::wS_IRUSR | gnd::wS_IWUSR |
-						gnd::wS_IRGRP | gnd::wS_IWGRP );
+				fd = ::gnd_multi_open(fname, O_WRONLY | O_TRUNC | O_CREAT | O_BINARY,
+						S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP );
 				if(fd < 0) return -1;
 
 				{ // ---> write file header
-					if( ::write(fd, &fheader.bfType, sizeof(unsigned short))		< (signed) sizeof(unsigned short) )	return -2;
-					if( ::write(fd, &fheader.bfSize, sizeof(uint32_t))			< (signed) sizeof(uint32_t) )	return -2;
-					if( ::write(fd, &fheader.bfReserved1, sizeof(unsigned short))	< (signed) sizeof(unsigned short) )	return -2;
-					if( ::write(fd, &fheader.bfReserved2, sizeof(unsigned short))	< (signed) sizeof(unsigned short) )	return -2;
-					if( ::write(fd, &fheader.bfOffBits, sizeof(uint32_t))		< (signed) sizeof(uint32_t) )	return -2;
+					if( ::gnd_multi_write(fd, &fheader.bfType, sizeof(unsigned short))		< (signed) sizeof(unsigned short) )	return -2;
+					if( ::gnd_multi_write(fd, &fheader.bfSize, sizeof(uint32_t))			< (signed) sizeof(uint32_t) )	return -2;
+					if( ::gnd_multi_write(fd, &fheader.bfReserved1, sizeof(unsigned short))	< (signed) sizeof(unsigned short) )	return -2;
+					if( ::gnd_multi_write(fd, &fheader.bfReserved2, sizeof(unsigned short))	< (signed) sizeof(unsigned short) )	return -2;
+					if( ::gnd_multi_write(fd, &fheader.bfOffBits, sizeof(uint32_t))		< (signed) sizeof(uint32_t) )	return -2;
 				} // <--- write file header
 
 				{ // ---> write info header
-					if( ::write(fd, &iheader.biSize, sizeof(uint32_t) )			< (signed) sizeof(uint32_t) )	return -2;
-					if( ::write(fd, &iheader.biWidth, sizeof(int32_t) )					< (signed) sizeof(int32_t) )			return -2;
-					if( ::write(fd, &iheader.biHeight, sizeof(int32_t) )				< (signed) sizeof(int32_t) )			return -2;
-					if( ::write(fd, &iheader.biPlanes, sizeof(unsigned short) )		< (signed) sizeof(unsigned short) )	return -2;
-					if( ::write(fd, &iheader.biBitCount, sizeof(unsigned short) )	< (signed) sizeof(unsigned short) )	return -2;
-					if( ::write(fd, &iheader.biCompression, sizeof(uint32_t) )	< (signed) sizeof(uint32_t) )	return -2;
-					if( ::write(fd, &iheader.biSizeImage, sizeof(uint32_t) )	< (signed) sizeof(uint32_t) )	return -2;
-					if( ::write(fd, &iheader.biXPixPerMeter, sizeof(int32_t) )			< (signed) sizeof(int32_t) )			return -2;
-					if( ::write(fd, &iheader.biYPixPerMeter, sizeof(int32_t) )			< (signed) sizeof(int32_t) )			return -2;
-					if( ::write(fd, &iheader.biClrUsed, sizeof(uint32_t) )		< (signed) sizeof(uint32_t) )	return -2;
-					if( ::write(fd, &iheader.biClrImporant, sizeof(uint32_t) )	< (signed) sizeof(uint32_t) )	return -2;
+					if( ::gnd_multi_write(fd, &iheader.biSize, sizeof(uint32_t) )			< (signed) sizeof(uint32_t) )	return -2;
+					if( ::gnd_multi_write(fd, &iheader.biWidth, sizeof(int32_t) )					< (signed) sizeof(int32_t) )			return -2;
+					if( ::gnd_multi_write(fd, &iheader.biHeight, sizeof(int32_t) )				< (signed) sizeof(int32_t) )			return -2;
+					if( ::gnd_multi_write(fd, &iheader.biPlanes, sizeof(unsigned short) )		< (signed) sizeof(unsigned short) )	return -2;
+					if( ::gnd_multi_write(fd, &iheader.biBitCount, sizeof(unsigned short) )	< (signed) sizeof(unsigned short) )	return -2;
+					if( ::gnd_multi_write(fd, &iheader.biCompression, sizeof(uint32_t) )	< (signed) sizeof(uint32_t) )	return -2;
+					if( ::gnd_multi_write(fd, &iheader.biSizeImage, sizeof(uint32_t) )	< (signed) sizeof(uint32_t) )	return -2;
+					if( ::gnd_multi_write(fd, &iheader.biXPixPerMeter, sizeof(int32_t) )			< (signed) sizeof(int32_t) )			return -2;
+					if( ::gnd_multi_write(fd, &iheader.biYPixPerMeter, sizeof(int32_t) )			< (signed) sizeof(int32_t) )			return -2;
+					if( ::gnd_multi_write(fd, &iheader.biClrUsed, sizeof(uint32_t) )		< (signed) sizeof(uint32_t) )	return -2;
+					if( ::gnd_multi_write(fd, &iheader.biClrImporant, sizeof(uint32_t) )	< (signed) sizeof(uint32_t) )	return -2;
 				} // <--- write info header
 
 				// ---> write colar pallete
 				for(size_t i = 0; i < (1<<8); i++){
 					rgb.rgbBlue = rgb.rgbGreen = rgb.rgbRed = i;
-					if( ::write(fd, &rgb.rgbBlue,     1) < 1)	return -2;
-					if( ::write(fd, &rgb.rgbGreen,    1) < 1)	return -2;
-					if( ::write(fd, &rgb.rgbRed,      1) < 1)	return -2;
-					if( ::write(fd, &rgb.rgbReserved, 1) < 1)	return -2;
+					if( ::gnd_multi_write(fd, &rgb.rgbBlue,     1) < 1)	return -2;
+					if( ::gnd_multi_write(fd, &rgb.rgbGreen,    1) < 1)	return -2;
+					if( ::gnd_multi_write(fd, &rgb.rgbRed,      1) < 1)	return -2;
+					if( ::gnd_multi_write(fd, &rgb.rgbReserved, 1) < 1)	return -2;
 				} // <--- write colar pallete
 
 
@@ -296,17 +292,17 @@ namespace gnd {
 				// write image data
 				for( size_t h = 0; h < (unsigned)iheader.biHeight; h++ ){
 					for( size_t w = 0; w < (unsigned)iheader.biWidth; w += gm->_unit_column_() ){
-						if( ::write(fd, gm->pointer(h, w), gm->_unit_column_() * sizeof(unsigned char)) <
+						if( ::gnd_multi_write(fd, gm->pointer(h, w), gm->_unit_column_() * sizeof(unsigned char)) <
 								((signed)gm->_unit_column_() * (signed)sizeof(unsigned char)) )	return -1;
 					}
 					for( size_t i = 0; i < pad; i++ ){
-						if( ::write(fd, &d, 1) < 1)	return -1;
+						if( ::gnd_multi_write(fd, &d, 1) < 1)	return -1;
 					}
 				}
 
-				//		if( ::write(fd, &org, sizeof(org)) < (signed) sizeof(org))	return -1;
+				//		if( ::gnd_multi_write(fd, &org, sizeof(org)) < (signed) sizeof(org))	return -1;
 
-				close(fd);
+				::gnd_multi_close(fd);
 			} // <--- file out
 
 			return 0;
@@ -333,33 +329,33 @@ namespace gnd {
 
 
 			{ // ---> initialize
-				fd = open(fname, O_RDWR | gnd::wO_BINARY );
+				fd = ::gnd_multi_open(fname, O_RDWR | O_BINARY );
 				if(fd < 0) return -1;
 			} // <--- initialize
 
 
 			{ // ---> file header
 				::memset(&fheader, 0, sizeof(fheader));
-				if( ::read(fd, &fheader.bfType,      sizeof(unsigned short))	< (signed) sizeof(unsigned short) )	return -2;
-				if( ::read(fd, &fheader.bfSize,      sizeof(uint32_t))		< (signed) sizeof(uint32_t) )	return -2;
-				if( ::read(fd, &fheader.bfReserved1, sizeof(unsigned short))	< (signed) sizeof(unsigned short) )	return -2;
-				if( ::read(fd, &fheader.bfReserved2, sizeof(unsigned short))	< (signed) sizeof(unsigned short) )	return -2;
-				if( ::read(fd, &fheader.bfOffBits,   sizeof(uint32_t))		< (signed) sizeof(uint32_t) )	return -2;
+				if( ::gnd_multi_read(fd, &fheader.bfType,      sizeof(unsigned short))	< (signed) sizeof(unsigned short) )	return -2;
+				if( ::gnd_multi_read(fd, &fheader.bfSize,      sizeof(uint32_t))		< (signed) sizeof(uint32_t) )	return -2;
+				if( ::gnd_multi_read(fd, &fheader.bfReserved1, sizeof(unsigned short))	< (signed) sizeof(unsigned short) )	return -2;
+				if( ::gnd_multi_read(fd, &fheader.bfReserved2, sizeof(unsigned short))	< (signed) sizeof(unsigned short) )	return -2;
+				if( ::gnd_multi_read(fd, &fheader.bfOffBits,   sizeof(uint32_t))		< (signed) sizeof(uint32_t) )	return -2;
 			} // <--- file header
 
 			{ // ---> info header
 				::memset(&iheader, 0, sizeof(iheader));
-				if( ::read(fd, &iheader.biSize, sizeof(uint32_t) )			< (signed) sizeof(uint32_t) )	return -2;
-				if( ::read(fd, &iheader.biWidth, sizeof(int32_t) )					< (signed) sizeof(int32_t) )			return -2;
-				if( ::read(fd, &iheader.biHeight, sizeof(int32_t) )					< (signed) sizeof(int32_t) )			return -2;
-				if( ::read(fd, &iheader.biPlanes, sizeof(unsigned short) )		< (signed) sizeof(unsigned short) )	return -2;
-				if( ::read(fd, &iheader.biBitCount, sizeof(unsigned short) )	< (signed) sizeof(unsigned short) )	return -2;
-				if( ::read(fd, &iheader.biCompression, sizeof(uint32_t) )	< (signed) sizeof(uint32_t) )	return -2;
-				if( ::read(fd, &iheader.biSizeImage, sizeof(uint32_t) )		< (signed) sizeof(uint32_t) )	return -2;
-				if( ::read(fd, &iheader.biXPixPerMeter, sizeof(int32_t) )			< (signed) sizeof(int32_t) )			return -2;
-				if( ::read(fd, &iheader.biYPixPerMeter, sizeof(int32_t) )			< (signed) sizeof(int32_t) )			return -2;
-				if( ::read(fd, &iheader.biClrUsed, sizeof(uint32_t) )		< (signed) sizeof(uint32_t) )	return -2;
-				if( ::read(fd, &iheader.biClrImporant, sizeof(uint32_t) )	< (signed) sizeof(uint32_t) )	return -2;
+				if( ::gnd_multi_read(fd, &iheader.biSize, sizeof(uint32_t) )			< (signed) sizeof(uint32_t) )	return -2;
+				if( ::gnd_multi_read(fd, &iheader.biWidth, sizeof(int32_t) )					< (signed) sizeof(int32_t) )			return -2;
+				if( ::gnd_multi_read(fd, &iheader.biHeight, sizeof(int32_t) )					< (signed) sizeof(int32_t) )			return -2;
+				if( ::gnd_multi_read(fd, &iheader.biPlanes, sizeof(unsigned short) )		< (signed) sizeof(unsigned short) )	return -2;
+				if( ::gnd_multi_read(fd, &iheader.biBitCount, sizeof(unsigned short) )	< (signed) sizeof(unsigned short) )	return -2;
+				if( ::gnd_multi_read(fd, &iheader.biCompression, sizeof(uint32_t) )	< (signed) sizeof(uint32_t) )	return -2;
+				if( ::gnd_multi_read(fd, &iheader.biSizeImage, sizeof(uint32_t) )		< (signed) sizeof(uint32_t) )	return -2;
+				if( ::gnd_multi_read(fd, &iheader.biXPixPerMeter, sizeof(int32_t) )			< (signed) sizeof(int32_t) )			return -2;
+				if( ::gnd_multi_read(fd, &iheader.biYPixPerMeter, sizeof(int32_t) )			< (signed) sizeof(int32_t) )			return -2;
+				if( ::gnd_multi_read(fd, &iheader.biClrUsed, sizeof(uint32_t) )		< (signed) sizeof(uint32_t) )	return -2;
+				if( ::gnd_multi_read(fd, &iheader.biClrImporant, sizeof(uint32_t) )	< (signed) sizeof(uint32_t) )	return -2;
 			} // <--- info header
 
 
@@ -378,10 +374,10 @@ namespace gnd {
 
 				// read image data
 				for( size_t h = 0; h < (unsigned)iheader.biHeight; h++ ){
-					if( ::read(fd, gm->pointer(h, 0), iheader.biWidth * pixlsize) < (signed) (iheader.biWidth * pixlsize))	return -2;
+					if( ::gnd_multi_read(fd, gm->pointer(h, 0), iheader.biWidth * pixlsize) < (signed) (iheader.biWidth * pixlsize))	return -2;
 
 					for( size_t i = 0; i < pad; i++ ){
-						if( ::read(fd, &d, 1) < 1)	return -2;
+						if( ::gnd_multi_read(fd, &d, 1) < 1)	return -2;
 					}
 				}
 
@@ -389,7 +385,7 @@ namespace gnd {
 			} // <--- set data
 
 			{ // ---> finalize
-				close(fd);
+				::gnd_multi_close(fd);
 			} // <--- finalize
 
 			return 0;
@@ -450,8 +446,8 @@ namespace gnd {
 				iheader.biBitCount = 8 * pixlsize;
 				iheader.biCompression = 0;
 				iheader.biSizeImage = imagesize;
-				iheader.biXPixPerMeter = ::round( 1.0 / gm->xrsl() );
-				iheader.biYPixPerMeter = ::round( 1.0 / gm->yrsl() );
+				iheader.biXPixPerMeter = gnd_multi_round( 1.0 / gm->xrsl() );
+				iheader.biYPixPerMeter = gnd_multi_round( 1.0 / gm->yrsl() );
 				iheader.biClrUsed      = 0;
 				iheader.biClrImporant  = 0;
 
@@ -463,47 +459,46 @@ namespace gnd {
 				int fd;
 				const unsigned char d = 0x00;	// dummy
 
-				fd = open(fname, O_WRONLY | O_TRUNC | O_CREAT | gnd::wO_BINARY,
-						gnd::wS_IRUSR | gnd::wS_IWUSR |
-						gnd::wS_IRGRP | gnd::wS_IWGRP );
+				fd = ::gnd_multi_open(fname, O_WRONLY | O_TRUNC | O_CREAT | O_BINARY,
+						S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP );
 				if(fd < 0) return -1;
 
 				{ // ---> write file header
-					if( ::write(fd, &fheader.bfType, sizeof(unsigned short))		< (signed) sizeof(unsigned short) )	return -2;
-					if( ::write(fd, &fheader.bfSize, sizeof(uint32_t))				< (signed) sizeof(uint32_t) )		return -2;
-					if( ::write(fd, &fheader.bfReserved1, sizeof(unsigned short))	< (signed) sizeof(unsigned short) )	return -2;
-					if( ::write(fd, &fheader.bfReserved2, sizeof(unsigned short))	< (signed) sizeof(unsigned short) )	return -2;
-					if( ::write(fd, &fheader.bfOffBits, sizeof(uint32_t))			< (signed) sizeof(uint32_t) )		return -2;
+					if( ::gnd_multi_write(fd, &fheader.bfType, sizeof(unsigned short))		< (signed) sizeof(unsigned short) )	return -2;
+					if( ::gnd_multi_write(fd, &fheader.bfSize, sizeof(uint32_t))				< (signed) sizeof(uint32_t) )		return -2;
+					if( ::gnd_multi_write(fd, &fheader.bfReserved1, sizeof(unsigned short))	< (signed) sizeof(unsigned short) )	return -2;
+					if( ::gnd_multi_write(fd, &fheader.bfReserved2, sizeof(unsigned short))	< (signed) sizeof(unsigned short) )	return -2;
+					if( ::gnd_multi_write(fd, &fheader.bfOffBits, sizeof(uint32_t))			< (signed) sizeof(uint32_t) )		return -2;
 				} // <--- write file header
 
 				{ // ---> write info header
-					if( ::write(fd, &iheader.biSize, sizeof(uint32_t) )				< (signed) sizeof(uint32_t) )		return -2;
-					if( ::write(fd, &iheader.biWidth, sizeof(int32_t) )					< (signed) sizeof(int) )			return -2;
-					if( ::write(fd, &iheader.biHeight, sizeof(int32_t) )				< (signed) sizeof(int) )			return -2;
-					if( ::write(fd, &iheader.biPlanes, sizeof(unsigned short) )		< (signed) sizeof(unsigned short) )	return -2;
-					if( ::write(fd, &iheader.biBitCount, sizeof(unsigned short) )	< (signed) sizeof(unsigned short) )	return -2;
-					if( ::write(fd, &iheader.biCompression, sizeof(uint32_t) )		< (signed) sizeof(uint32_t) )		return -2;
-					if( ::write(fd, &iheader.biSizeImage, sizeof(uint32_t) )		< (signed) sizeof(uint32_t) )		return -2;
-					if( ::write(fd, &iheader.biXPixPerMeter, sizeof(int32_t) )			< (signed) sizeof(int) )			return -2;
-					if( ::write(fd, &iheader.biYPixPerMeter, sizeof(int32_t) )			< (signed) sizeof(int) )			return -2;
-					if( ::write(fd, &iheader.biClrUsed, sizeof(uint32_t) )			< (signed) sizeof(uint32_t) )		return -2;
-					if( ::write(fd, &iheader.biClrImporant, sizeof(uint32_t) )		< (signed) sizeof(uint32_t) )		return -2;
+					if( ::gnd_multi_write(fd, &iheader.biSize, sizeof(uint32_t) )				< (signed) sizeof(uint32_t) )		return -2;
+					if( ::gnd_multi_write(fd, &iheader.biWidth, sizeof(int32_t) )					< (signed) sizeof(int) )			return -2;
+					if( ::gnd_multi_write(fd, &iheader.biHeight, sizeof(int32_t) )				< (signed) sizeof(int) )			return -2;
+					if( ::gnd_multi_write(fd, &iheader.biPlanes, sizeof(unsigned short) )		< (signed) sizeof(unsigned short) )	return -2;
+					if( ::gnd_multi_write(fd, &iheader.biBitCount, sizeof(unsigned short) )	< (signed) sizeof(unsigned short) )	return -2;
+					if( ::gnd_multi_write(fd, &iheader.biCompression, sizeof(uint32_t) )		< (signed) sizeof(uint32_t) )		return -2;
+					if( ::gnd_multi_write(fd, &iheader.biSizeImage, sizeof(uint32_t) )		< (signed) sizeof(uint32_t) )		return -2;
+					if( ::gnd_multi_write(fd, &iheader.biXPixPerMeter, sizeof(int32_t) )			< (signed) sizeof(int) )			return -2;
+					if( ::gnd_multi_write(fd, &iheader.biYPixPerMeter, sizeof(int32_t) )			< (signed) sizeof(int) )			return -2;
+					if( ::gnd_multi_write(fd, &iheader.biClrUsed, sizeof(uint32_t) )			< (signed) sizeof(uint32_t) )		return -2;
+					if( ::gnd_multi_write(fd, &iheader.biClrImporant, sizeof(uint32_t) )		< (signed) sizeof(uint32_t) )		return -2;
 				} // <--- write info header
 
 				// write image data
 				for( size_t h = 0; h < (unsigned)iheader.biHeight; h++ ){
 					for( size_t w = 0; w < (unsigned)iheader.biWidth; w += gm->_unit_column_() ){
-						if( ::write(fd, gm->pointer(h, w), gm->_unit_column_() * sizeof(uint32_t)) <
+						if( ::gnd_multi_write(fd, gm->pointer(h, w), gm->_unit_column_() * sizeof(uint32_t)) <
 								((signed)gm->_unit_column_() * (signed)sizeof(uint32_t)) )	return -1;
 					}
 					for( size_t i = 0; i < pad; i++ ){
-						if( ::write(fd, &d, 1) < 1)	return -1;
+						if( ::gnd_multi_write(fd, &d, 1) < 1)	return -1;
 					}
 				}
 
-				//		if( ::write(fd, &org, sizeof(org)) < (signed) sizeof(org))	return -1;
+				//		if( ::gnd_multi_write(fd, &org, sizeof(org)) < (signed) sizeof(org))	return -1;
 
-				close(fd);
+				::gnd_multi_close(fd);
 			} // <--- file out
 
 			return 0;
@@ -530,33 +525,33 @@ namespace gnd {
 
 
 			{ // ---> initialize
-				fd = open(fname, O_RDWR | gnd::wO_BINARY);
+				fd = ::gnd_multi_open(fname, O_RDWR | O_BINARY);
 				if(fd < 0) return -1;
 			} // <--- initialize
 
 
 			{ // ---> file header
 				::memset(&fheader, 0, sizeof(fheader));
-				if( ::read(fd, &fheader.bfType,      sizeof(unsigned short))	< (signed) sizeof(unsigned short) )	return -2;
-				if( ::read(fd, &fheader.bfSize,      sizeof(uint32_t))			< (signed) sizeof(uint32_t) )		return -2;
-				if( ::read(fd, &fheader.bfReserved1, sizeof(unsigned short))	< (signed) sizeof(unsigned short) )	return -2;
-				if( ::read(fd, &fheader.bfReserved2, sizeof(unsigned short))	< (signed) sizeof(unsigned short) )	return -2;
-				if( ::read(fd, &fheader.bfOffBits,   sizeof(uint32_t))			< (signed) sizeof(uint32_t) )		return -2;
+				if( ::gnd_multi_read(fd, &fheader.bfType,      sizeof(unsigned short))	< (signed) sizeof(unsigned short) )	return -2;
+				if( ::gnd_multi_read(fd, &fheader.bfSize,      sizeof(uint32_t))			< (signed) sizeof(uint32_t) )		return -2;
+				if( ::gnd_multi_read(fd, &fheader.bfReserved1, sizeof(unsigned short))	< (signed) sizeof(unsigned short) )	return -2;
+				if( ::gnd_multi_read(fd, &fheader.bfReserved2, sizeof(unsigned short))	< (signed) sizeof(unsigned short) )	return -2;
+				if( ::gnd_multi_read(fd, &fheader.bfOffBits,   sizeof(uint32_t))			< (signed) sizeof(uint32_t) )		return -2;
 			} // <--- file header
 
 			{ // ---> info header
 				::memset(&iheader, 0, sizeof(iheader));
-				if( ::read(fd, &iheader.biSize, sizeof(uint32_t) )				< (signed) sizeof(uint32_t) )		return -2;
-				if( ::read(fd, &iheader.biWidth, sizeof(int32_t) )				< (signed) sizeof(int32_t) )		return -2;
-				if( ::read(fd, &iheader.biHeight, sizeof(int32_t) )				< (signed) sizeof(int32_t) )		return -2;
-				if( ::read(fd, &iheader.biPlanes, sizeof(unsigned short) )		< (signed) sizeof(unsigned short) )	return -2;
-				if( ::read(fd, &iheader.biBitCount, sizeof(unsigned short) )	< (signed) sizeof(unsigned short) )	return -2;
-				if( ::read(fd, &iheader.biCompression, sizeof(uint32_t) )		< (signed) sizeof(uint32_t) )		return -2;
-				if( ::read(fd, &iheader.biSizeImage, sizeof(uint32_t) )			< (signed) sizeof(uint32_t) )		return -2;
-				if( ::read(fd, &iheader.biXPixPerMeter, sizeof(int32_t) )		< (signed) sizeof(int32_t) )		return -2;
-				if( ::read(fd, &iheader.biYPixPerMeter, sizeof(int32_t) )		< (signed) sizeof(int32_t) )		return -2;
-				if( ::read(fd, &iheader.biClrUsed, sizeof(uint32_t) )			< (signed) sizeof(uint32_t) )		return -2;
-				if( ::read(fd, &iheader.biClrImporant, sizeof(uint32_t) )		< (signed) sizeof(uint32_t) )		return -2;
+				if( ::gnd_multi_read(fd, &iheader.biSize, sizeof(uint32_t) )				< (signed) sizeof(uint32_t) )		return -2;
+				if( ::gnd_multi_read(fd, &iheader.biWidth, sizeof(int32_t) )				< (signed) sizeof(int32_t) )		return -2;
+				if( ::gnd_multi_read(fd, &iheader.biHeight, sizeof(int32_t) )				< (signed) sizeof(int32_t) )		return -2;
+				if( ::gnd_multi_read(fd, &iheader.biPlanes, sizeof(unsigned short) )		< (signed) sizeof(unsigned short) )	return -2;
+				if( ::gnd_multi_read(fd, &iheader.biBitCount, sizeof(unsigned short) )	< (signed) sizeof(unsigned short) )	return -2;
+				if( ::gnd_multi_read(fd, &iheader.biCompression, sizeof(uint32_t) )		< (signed) sizeof(uint32_t) )		return -2;
+				if( ::gnd_multi_read(fd, &iheader.biSizeImage, sizeof(uint32_t) )			< (signed) sizeof(uint32_t) )		return -2;
+				if( ::gnd_multi_read(fd, &iheader.biXPixPerMeter, sizeof(int32_t) )		< (signed) sizeof(int32_t) )		return -2;
+				if( ::gnd_multi_read(fd, &iheader.biYPixPerMeter, sizeof(int32_t) )		< (signed) sizeof(int32_t) )		return -2;
+				if( ::gnd_multi_read(fd, &iheader.biClrUsed, sizeof(uint32_t) )			< (signed) sizeof(uint32_t) )		return -2;
+				if( ::gnd_multi_read(fd, &iheader.biClrImporant, sizeof(uint32_t) )		< (signed) sizeof(uint32_t) )		return -2;
 			} // <--- info header
 
 			{ // ---> set data
@@ -574,10 +569,10 @@ namespace gnd {
 
 				// read image data
 				for( size_t h = 0; h < (unsigned)iheader.biHeight; h++ ){
-					if( ::read(fd, gm->pointer(h, 0), iheader.biWidth * pixlsize) < (signed) (iheader.biWidth * pixlsize))	return -2;
+					if( ::gnd_multi_read(fd, gm->pointer(h, 0), iheader.biWidth * pixlsize) < (signed) (iheader.biWidth * pixlsize))	return -2;
 
 					for( size_t i = 0; i < pad; i++ ){
-						if( ::read(fd, &d, 1) < 1)	return -2;
+						if( ::gnd_multi_read(fd, &d, 1) < 1)	return -2;
 					}
 				}
 
@@ -585,7 +580,7 @@ namespace gnd {
 			} // <--- set data
 
 			{ // ---> finalize
-				close(fd);
+				gnd_multi_close(fd);
 			} // <--- finalize
 
 			return 0;
@@ -595,6 +590,5 @@ namespace gnd {
 	}
 }
 // <--- function definition
-
 
 #endif /* GND_BMP_HPP_ */

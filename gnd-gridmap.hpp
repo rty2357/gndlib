@@ -10,13 +10,10 @@
 
 #include <string.h>
 #include <math.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <unistd.h>
+
+#include "gnd-multi-io.h"
 #include <errno.h>
 
-#include "gnd-wrap-sys.hpp"
 
 // include debug logging function
 #define GND_DEBUG_LOG_NAMESPACE1 gnd
@@ -55,7 +52,7 @@ namespace gnd { // ---> namespace gnd
 		 * @ingroup GNDGridMap
 		 * @brief file tag byte size
 		 */
-		static const int32_t __FileTagSize__ = ::strlen(__GridMapFileTag__);
+		static const int32_t __FileTagSize__ = sizeof(__GridMapFileTag__) - 1;
 	} // <--- namespace GridMap
 } // <--- namespace gnd
 // <--- constant value definition
@@ -586,9 +583,8 @@ namespace gnd { // ---> namespace gnd
 			int fsize;
 
 			{ // ---> initialize
-				fd = open(fname, O_WRONLY | O_TRUNC | O_CREAT | gnd::wO_BINARY,
-						gnd::wS_IRUSR | gnd::wS_IWUSR |
-						gnd::wS_IRGRP | gnd::wS_IWGRP );
+				fd = ::gnd_multi_open(fname, O_WRONLY | O_TRUNC | O_CREAT | O_BINARY,
+						S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP );
 				if(fd < 0) return -1;
 				fsize = 0;
 			} // <--- initialize
@@ -598,15 +594,15 @@ namespace gnd { // ---> namespace gnd
 				int32_t unit_size = 0;
 
 				// save file tag
-				if( (ret = ::write(fd, gridmap::__GridMapFileTag__, gridmap::__FileTagSize__)) != gridmap::__FileTagSize__ )
+				if( (ret = ::gnd_multi_write(fd, gridmap::__GridMapFileTag__, gridmap::__FileTagSize__)) != gridmap::__FileTagSize__ )
 					return -1;
 				fsize += ret;
 
 				// file header
-				if( (ret = ::write(fd, &_unit, sizeof(_unit)) ) != sizeof(_unit) )
+				if( (ret = ::gnd_multi_write(fd, &_unit, sizeof(_unit)) ) != sizeof(_unit) )
 					return -1;
 				fsize += ret;
-				if( (ret = ::write(fd, &_plane, sizeof(_plane)) ) != sizeof(_plane) )
+				if( (ret = ::gnd_multi_write(fd, &_plane, sizeof(_plane)) ) != sizeof(_plane) )
 					return -1;
 				fsize += ret;
 
@@ -614,7 +610,7 @@ namespace gnd { // ---> namespace gnd
 				unit_size = sizeof(T) * _unit.row * _unit.column;
 				for(uint32_t r = 0; r < _plane.row; r++){
 					for(uint32_t c = 0; c < _plane.column; c++){
-						if( (ret = ::write(fd, _header[r][c], unit_size) ) != unit_size )
+						if( (ret = ::gnd_multi_write(fd, _header[r][c], unit_size) ) != unit_size )
 							return -1;
 						fsize += ret;
 					}
@@ -623,7 +619,7 @@ namespace gnd { // ---> namespace gnd
 
 
 			{ // ---> finalize
-				close(fd);
+				::gnd_multi_close(fd);
 			} // <--- finalize
 
 			return fsize;
@@ -642,7 +638,7 @@ namespace gnd { // ---> namespace gnd
 			long fsize;
 
 			{ // ---> initialize
-				fd = open(fname, O_RDWR | gnd::wO_BINARY );
+				fd = ::gnd_multi_open(fname, O_RDWR | O_BINARY );
 				if(fd < 0) return -1;
 				fsize = 0;
 			} // <--- initialize
@@ -654,17 +650,17 @@ namespace gnd { // ---> namespace gnd
 				int32_t unit_size = 0;
 
 				// save file tag
-				if( (ret = ::read(fd, buf, sizeof(buf))) != (signed)sizeof(buf) )
+				if( (ret = ::gnd_multi_read(fd, buf, sizeof(buf))) != (signed)sizeof(buf) )
 					return -1;
 				fsize += ret;
 				if( ::memcmp(buf, gridmap::__GridMapFileTag__, gridmap::__FileTagSize__ ))
 					return -1;
 
 				// file header
-				if( (ret = ::read(fd, &u, sizeof(u)) ) != sizeof(u) )
+				if( (ret = ::gnd_multi_read(fd, &u, sizeof(u)) ) != sizeof(u) )
 					return -1;
 				fsize += ret;
-				if( (ret = ::read(fd, &p, sizeof(p)) ) != sizeof(p) )
+				if( (ret = ::gnd_multi_read(fd, &p, sizeof(p)) ) != sizeof(p) )
 					return -1;
 				fsize += ret;
 
@@ -676,7 +672,7 @@ namespace gnd { // ---> namespace gnd
 				unit_size = sizeof(T) * _unit.row * _unit.column;
 				for(uint32_t r = 0; r < _plane.row; r++){
 					for(uint32_t c = 0; c < _plane.column; c++){
-						if( (ret = ::read(fd, _header[r][c], unit_size) ) != unit_size )
+						if( (ret = ::gnd_multi_read(fd, _header[r][c], unit_size) ) != unit_size )
 							return -1;
 						fsize += ret;
 					}
@@ -685,7 +681,7 @@ namespace gnd { // ---> namespace gnd
 
 
 			{ // ---> finalize
-				close(fd);
+				::gnd_multi_close(fd);
 			} // <--- finalize
 
 			return fsize;
@@ -1241,9 +1237,8 @@ namespace gnd { // namespace gnd
 			LogIndent();
 
 			{ // ---> initialize
-				fd = open(fname, O_WRONLY | O_TRUNC | O_CREAT | gnd::wO_BINARY,
-						gnd::wS_IRUSR | gnd::wS_IWUSR |
-						gnd::wS_IRGRP | gnd::wS_IWGRP);
+				fd = ::gnd_multi_open(fname, O_WRONLY | O_TRUNC | O_CREAT | O_BINARY,
+						S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP);
 				if(fd < 0) {
 					LogVerbose("fail to file open\n");
 					LogUnindent();
@@ -1259,7 +1254,7 @@ namespace gnd { // namespace gnd
 				gridmap::pixelindex buf;
 
 				// save file tag
-				if( (ret = ::write(fd, gridmap::__GridPlaneFileTag__, gridmap::__FileTagSize__)) != gridmap::__FileTagSize__ ) {
+				if( (ret = ::gnd_multi_write(fd, gridmap::__GridPlaneFileTag__, gridmap::__FileTagSize__)) != gridmap::__FileTagSize__ ) {
 					LogVerbose("fail to write\n");
 					LogUnindent();
 					LogVerbosef("Fail - gridplane write into \"%s\"\n", fname);
@@ -1270,7 +1265,7 @@ namespace gnd { // namespace gnd
 
 				// file header
 				buf = basic_gridmap<T>::_unit;
-				if( (ret = ::write(fd, &buf, sizeof(buf) ) ) != sizeof( buf ) ) {
+				if( (ret = ::gnd_multi_write(fd, &buf, sizeof(buf) ) ) != sizeof( buf ) ) {
 					LogVerbose("fail to write\n");
 					LogUnindent();
 					LogVerbosef("Fail - gridplane write into \"%s\"\n", fname);
@@ -1280,7 +1275,7 @@ namespace gnd { // namespace gnd
 				fsize += ret;
 
 				buf = basic_gridmap<T>::_plane;
-				if( (ret = ::write(fd, &buf, sizeof(buf) ) ) != sizeof( buf ) ){
+				if( (ret = ::gnd_multi_write(fd, &buf, sizeof(buf) ) ) != sizeof( buf ) ){
 					LogVerbose("fail to write\n");
 					LogUnindent();
 					LogVerbosef("Fail - gridplane write into \"%s\"\n", fname);
@@ -1290,7 +1285,7 @@ namespace gnd { // namespace gnd
 				fsize += ret;
 
 				// file header
-				if( (ret = ::write(fd, &_orgn, sizeof(_orgn)) ) != sizeof(_orgn) ){
+				if( (ret = ::gnd_multi_write(fd, &_orgn, sizeof(_orgn)) ) != sizeof(_orgn) ){
 					LogVerbose("fail to write\n");
 					LogUnindent();
 					LogVerbosef("Fail - gridplane write into \"%s\"\n", fname);
@@ -1298,7 +1293,7 @@ namespace gnd { // namespace gnd
 				}
 				LogVerbosef("Origin Data %dbyte\n", ret);
 				fsize += ret;
-				if( (ret = ::write(fd, &_rsl, sizeof(_rsl)) ) != sizeof(_orgn) ){
+				if( (ret = ::gnd_multi_write(fd, &_rsl, sizeof(_rsl)) ) != sizeof(_orgn) ){
 					LogVerbose("fail to write\n");
 					LogUnindent();
 					LogVerbosef("Fail - gridplane write into \"%s\"\n", fname);
@@ -1315,7 +1310,7 @@ namespace gnd { // namespace gnd
 						char *p = (char*)basic_gridmap<T>::_header[r][c];
 
 						while( nwrite < unit_size ) {
-							ret = ::write(fd, p + nwrite, unit_size - nwrite);
+							ret = ::gnd_multi_write(fd, p + nwrite, unit_size - nwrite);
 							if( ret <= 0 ){
 								LogVerbose("fail to write\n");
 								LogUnindent();
@@ -1332,7 +1327,7 @@ namespace gnd { // namespace gnd
 
 
 			{ // ---> finalize
-				close(fd);
+				::gnd_multi_close(fd);
 			} // <--- finalize
 
 			LogUnindent();
@@ -1356,7 +1351,7 @@ namespace gnd { // namespace gnd
 			LogIndent();
 
 			{ // ---> initialize
-				fd = open(fname, O_RDWR | gnd::wO_BINARY );
+				fd = ::gnd_multi_open(fname, O_RDWR | O_BINARY );
 				if(fd < 0) {
 					LogVerbose("fail to file open\n");
 					LogUnindent();
@@ -1372,7 +1367,7 @@ namespace gnd { // namespace gnd
 				int32_t unit_size = 0;
 				memset(buf, 0, sizeof(buf));
 				// save file tag
-				if( (ret = ::read(fd, buf, gridmap::__FileTagSize__)) != (signed) gridmap::__FileTagSize__ ) {
+				if( (ret = ::gnd_multi_read(fd, buf, gridmap::__FileTagSize__)) != (signed) gridmap::__FileTagSize__ ) {
 					LogVerbose("fail to read\n");
 					LogUnindent();
 					LogVerbosef("Fail - gridplane read from \"%s\"\n", fname);
@@ -1388,7 +1383,7 @@ namespace gnd { // namespace gnd
 				}
 
 				// file header
-				if( (ret = ::read(fd, &u, sizeof(u)) ) != sizeof(u) ) {
+				if( (ret = ::gnd_multi_read(fd, &u, sizeof(u)) ) != sizeof(u) ) {
 					LogVerbose("fail to read\n");
 					LogUnindent();
 					LogVerbosef("Fail - gridplane read from \"%s\"\n", fname);
@@ -1396,7 +1391,7 @@ namespace gnd { // namespace gnd
 				}
 				LogVerbosef("Memory Unit Size Data %dbyte\n", ret);
 				fsize += ret;
-				if( (ret = ::read(fd, &p, sizeof(p)) ) != sizeof(p) ) {
+				if( (ret = ::gnd_multi_read(fd, &p, sizeof(p)) ) != sizeof(p) ) {
 					LogVerbose("fail to read\n");
 					LogUnindent();
 					LogVerbosef("Fail - gridplane read from \"%s\"\n", fname);
@@ -1406,7 +1401,7 @@ namespace gnd { // namespace gnd
 				fsize += ret;
 
 				// file header
-				if( (ret = ::read(fd, &_orgn, sizeof(_orgn)) ) != sizeof(_orgn) ) {
+				if( (ret = ::gnd_multi_read(fd, &_orgn, sizeof(_orgn)) ) != sizeof(_orgn) ) {
 					LogVerbose("fail to read\n");
 					LogUnindent();
 					LogVerbosef("Fail - gridplane read from \"%s\"\n", fname);
@@ -1414,7 +1409,7 @@ namespace gnd { // namespace gnd
 				}
 				LogVerbosef("Origin Data %dbyte\n", ret);
 				fsize += ret;
-				if( (ret = ::read(fd, &_rsl, sizeof(_rsl)) ) != sizeof(_orgn) ) {
+				if( (ret = ::gnd_multi_read(fd, &_rsl, sizeof(_rsl)) ) != sizeof(_orgn) ) {
 					LogVerbose("fail to read\n");
 					LogUnindent();
 					LogVerbosef("Fail - gridplane read from \"%s\"\n", fname);
@@ -1440,7 +1435,7 @@ namespace gnd { // namespace gnd
 						char* p = (char*) basic_gridmap<T>::_header[r][c];
 
 						while( nread < unit_size ) {
-							ret = ::read(fd, p + nread, unit_size - nread);
+							ret = ::gnd_multi_read(fd, p + nread, unit_size - nread);
 							if( ret <= 0 ) {
 								LogVerbose("fail to read\n");
 								LogUnindent();
@@ -1458,7 +1453,7 @@ namespace gnd { // namespace gnd
 
 
 			{ // ---> finalize
-				close(fd);
+				::gnd_multi_close(fd);
 			} // <--- finalize
 
 			LogUnindent();
