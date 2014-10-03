@@ -234,7 +234,7 @@ namespace gnd {
 			// ---> plane scan loop
 			for( size_t i = 0; i < PlaneNum; i++){
 				// check error
-				if( m->plane[i].is_allocate() < 0) {
+				if( m->plane[i].is_allocate() ) {
 					LogDebug("this map is buzy\n");
 					LogUnindent();
 					LogDebugf(" Fail - init_counting_map(%p, %lf, %lf)\n", m, p, u);

@@ -11,7 +11,6 @@
 
 #include <stdlib.h>
 #include <stdint.h>
-#include <time.h>
 #include "gnd-matrix-base.hpp"
 #include "gnd-vector-base.hpp"
 
