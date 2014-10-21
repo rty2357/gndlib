@@ -36,7 +36,7 @@ namespace gnd {
 	class queue {
 		// ---> constants
 	public:
-		static const uint64_t InitAlloc = 8;	///< initialize allocate buffer
+		static const uint32_t InitAlloc = 8;	///< initialize allocate buffer
 
 		// <--- constants
 
@@ -53,15 +53,15 @@ namespace gnd {
 		// ---> data
 	protected:
 		T* _data;							///< data buffer
-		uint64_t _n;							///< number of data
-		uint64_t _nalloc;						///< number of allocate
+		uint32_t _n;							///< number of data
+		uint32_t _nalloc;						///< number of allocate
 	protected:
-		int __allocate__(uint64_t n);
+		int __allocate__(uint32_t n);
 		int __deallocate__();
-		int __reallocate__(uint64_t n = 0);
+		int __reallocate__(uint32_t n = 0);
 		// <--- data
 	public:
-		int allocate(uint64_t n);
+		int allocate(uint32_t n);
 
 		// assign
 	public:
@@ -69,30 +69,30 @@ namespace gnd {
 
 		// ---> get property
 	public:
-		uint64_t nalloc() const;
-		uint64_t size() const;
+		uint32_t nalloc() const;
+		uint32_t size() const;
 		// <--- get property
 
 		// ---> data entry and delete
 	public:
 		// insert
-		int insert(const uint64_t i, const T* src, const uint64_t n = 1);
+		int insert(const uint32_t i, const T* src, const uint32_t n = 1);
 		// erase
-		int erase(const uint64_t i, const uint64_t n = 1);
+		int erase(const uint32_t i, const uint32_t n = 1);
 		int erase(T* p);
 
-		int push_back(const T* src, const uint64_t n = 1);
-		int push_front(const T* src, const uint64_t n = 1);
-		int pop_back(T* dest, const uint64_t n = 1);
-		int pop_front(T* dest, const uint64_t n = 1);
+		int push_back(const T* src, const uint32_t n = 1);
+		int push_front(const T* src, const uint32_t n = 1);
+		int pop_back(T* dest, const uint32_t n = 1);
+		int pop_front(T* dest, const uint32_t n = 1);
 
 		int clear();
 
 		// ---> copy and move
 	public:
 		// mode
-		int move(const uint64_t i, T* dest, const uint64_t n = 1);
-		int copy(const T* src, const uint64_t n);
+		int move(const uint32_t i, T* dest, const uint32_t n = 1);
+		int copy(const T* src, const uint32_t n);
 		// <--- copy and move
 
 
@@ -106,8 +106,8 @@ namespace gnd {
 
 		// ---> data copy and move method
 	public:
-		virtual int __copy__(T* dest, const T* src, uint64_t len);
-		virtual int __move__(T* dest, const T* src, uint64_t len);
+		virtual int __copy__(T* dest, const T* src, uint32_t len);
+		virtual int __move__(T* dest, const T* src, uint32_t len);
 		// <--- data copy and move method
 
 		// ---> operator over ride
@@ -158,7 +158,7 @@ namespace gnd {
 	 */
 	template < typename T >
 	inline
-	int queue<T>::__allocate__(uint64_t n)
+	int queue<T>::__allocate__(uint32_t n)
 	{
 		return __reallocate__();
 	}
@@ -186,7 +186,7 @@ namespace gnd {
 	 */
 	template < typename T >
 	inline
-	int queue<T>::__reallocate__(uint64_t n)
+	int queue<T>::__reallocate__(uint32_t n)
 	{
 		// first allocate
 		if(!_data){
@@ -200,7 +200,7 @@ namespace gnd {
 
 		{ // ---> reallocate
 			T* stack;
-			uint64_t nalloc;
+			uint32_t nalloc;
 
 			// compute allocate size
 			for(nalloc = _nalloc << 1; nalloc < n; nalloc <<= 1);
@@ -222,7 +222,7 @@ namespace gnd {
 
 	template < typename T >
 	inline
-	int queue<T>::allocate(uint64_t n) {
+	int queue<T>::allocate(uint32_t n) {
 		return __reallocate__(n);
 	}
 
@@ -260,7 +260,7 @@ namespace gnd {
 	 */
 	template < typename T >
 	inline
-	uint64_t queue<T>::nalloc() const
+	uint32_t queue<T>::nalloc() const
 	{
 		return _nalloc;
 	}
@@ -271,7 +271,7 @@ namespace gnd {
 	 */
 	template < typename T >
 	inline
-	uint64_t queue<T>::size() const
+	uint32_t queue<T>::size() const
 	{
 		return _n;
 	}
@@ -288,7 +288,7 @@ namespace gnd {
 	 */
 	template < typename T >
 	inline
-	int queue<T>::insert(const uint64_t i, const T* src, const uint64_t n)
+	int queue<T>::insert(const uint32_t i, const T* src, const uint32_t n)
 	{
 		gnd_assert(!src, -1, "invalid argument");
 		gnd_assert(i > _n, -1, "out of buffer");
@@ -318,9 +318,9 @@ namespace gnd {
 	 */
 	template < typename T >
 	inline
-	int queue<T>::move(const uint64_t i, T* dest, const uint64_t n)
+	int queue<T>::move(const uint32_t i, T* dest, const uint32_t n)
 	{
-		gnd_assert(i + n >= _n, -1, "out of buffer");
+		gnd_assert(i + n > _n, -1, "out of buffer");
 		gnd_error(n == 0, 0, "ineffectual argument");
 
 		// copy
@@ -343,7 +343,7 @@ namespace gnd {
 	 */
 	template < typename T >
 	inline
-	int queue<T>::erase(const uint64_t i, const uint64_t n)
+	int queue<T>::erase(const uint32_t i, const uint32_t n)
 	{
 		return move(i, 0, n);
 	}
@@ -360,7 +360,7 @@ namespace gnd {
 	inline
 	int queue<T>::erase(T* p)
 	{
-		uint64_t i;
+		uint32_t i;
 		gnd_error(_n == 0, -1, "out of buffer");
 		gnd_error(!p, -1, "ineffectual argument");
 
@@ -383,7 +383,7 @@ namespace gnd {
 	 */
 	template < typename T >
 	inline
-	int queue<T>::push_back(const T* src, const uint64_t n)
+	int queue<T>::push_back(const T* src, const uint32_t n)
 	{
 		return insert(size(), src, n);
 	}
@@ -396,7 +396,7 @@ namespace gnd {
 	 */
 	template < typename T >
 	inline
-	int queue<T>::push_front(const T* src, const uint64_t n)
+	int queue<T>::push_front(const T* src, const uint32_t n)
 	{
 		return insert(0, src, n);
 	}
@@ -410,7 +410,7 @@ namespace gnd {
 	 */
 	template < typename T >
 	inline
-	int queue<T>::pop_back(T* dest, const uint64_t n)
+	int queue<T>::pop_back(T* dest, const uint32_t n)
 	{
 		return move(size(), dest, n);
 	}
@@ -423,7 +423,7 @@ namespace gnd {
 	 */
 	template < typename T >
 	inline
-	int queue<T>::pop_front(T* dest, const uint64_t n)
+	int queue<T>::pop_front(T* dest, const uint32_t n)
 	{
 		return move(0, dest, n);
 	}
@@ -439,7 +439,7 @@ namespace gnd {
 	 */
 	template < typename T >
 	inline
-	int queue<T>::__copy__(T* dest, const T* src, uint64_t len)
+	int queue<T>::__copy__(T* dest, const T* src, uint32_t len)
 	{
 		::memcpy(dest, src, sizeof(T) * len);
 		return 0;
@@ -453,7 +453,7 @@ namespace gnd {
 	 */
 	template < typename T >
 	inline
-	int queue<T>::__move__(T* dest, const T* src, uint64_t len)
+	int queue<T>::__move__(T* dest, const T* src, uint32_t len)
 	{
 		::memmove(dest, src, sizeof(T) * len);
 		return 0;
@@ -529,7 +529,7 @@ namespace gnd {
 	 */
 	template < typename T >
 	inline
-	int queue<T>::copy(const T* src, const uint64_t n)
+	int queue<T>::copy(const T* src, const uint32_t n)
 	{
 		gnd_assert(!src, -1, "invalid arugment");
 		gnd_error(n == 0, 0, "ineffectual argument");

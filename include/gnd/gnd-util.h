@@ -15,7 +15,7 @@
  * @endif
  */
 
-#include <math.h>
+#include "gnd-multi-math.h"
 
 #define gnd_sign(x)				( ((x) < 0) ? -1 : 1 )
 

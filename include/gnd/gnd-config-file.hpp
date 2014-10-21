@@ -117,6 +117,8 @@ namespace gnd {
 
 			// set child
 		public:
+			int child_push_back(configuration* dest);
+			int child_push_front(configuration* dest);
 			int child_push_back(const char* n, const char* v = 0, const char* c = 0);
 			int child_push_front(const char* n, const char* v = 0, const char* c = 0);
 
@@ -153,9 +155,9 @@ namespace gnd {
 namespace gnd {
 	template<>
 	inline
-	int queue<gnd::conf::configuration>::__move__(gnd::conf::configuration* dest, const gnd::conf::configuration* src, uint64_t len)
+	int queue<gnd::conf::configuration>::__move__(gnd::conf::configuration* dest, const gnd::conf::configuration* src, uint32_t len)
 	{
-		uint64_t i = 0;
+		uint32_t i = 0;
 		gnd::conf::configuration *p = const_cast<gnd::conf::configuration* >(src);
 
 		for(i = 0; i < len; i++){
@@ -171,7 +173,7 @@ namespace gnd {
 
 	template<>
 	inline
-	int queue<gnd::conf::configuration>::__copy__(gnd::conf::configuration* dest, const gnd::conf::configuration* src, uint64_t len)
+	int queue<gnd::conf::configuration>::__copy__(gnd::conf::configuration* dest, const gnd::conf::configuration* src, uint32_t len)
 	{
 		return __move__(dest, src, len);
 	}
@@ -288,6 +290,14 @@ const char* gnd::conf::configuration::comment() const
 
 
 // set child
+
+int gnd::conf::configuration::child_push_back(configuration* dest) {
+	return _children.push_back(dest);
+}
+int gnd::conf::configuration::child_push_front(configuration* dest) {
+	return _children.push_front(dest);
+}
+
 /**
  * @brief set child (push back)
  * @param[in] n: child configuration data name
@@ -490,7 +500,7 @@ int gnd::conf::configuration::__show__(FILE* fp, const int depth, const char fla
 	else if( _children.size() != 0 ){
 		if(fp) ::fprintf(fp, "{\n");
 		LogDebug("{");
-		for(i = 0; i < _children.size(); i++){
+		for(i = 0; i < (signed)_children.size(); i++){
 			_children[i].__show__(fp, depth + 1);
 		}
 		if(fp) ::fprintf(fp, "%s}", head);
