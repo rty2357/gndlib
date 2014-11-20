@@ -27,7 +27,7 @@
 
 namespace gnd { // ---> namespace gnd
 	namespace matrix { // ---> namespace matrix
-
+		inline
 		double __coordinate_matrix_inner_product__(
 				const double x1, const double y1, const double z1,
 				const double x2, const double y2, const double z2 )
