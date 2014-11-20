@@ -164,7 +164,13 @@ namespace gnd {
 			::strncpy(dest[i]._item, src[i]._item, sizeof(dest[i]._item));
 			::strncpy(dest[i]._value, src[i]._value, sizeof(dest[i]._value));
 			::strncpy(dest[i]._comment, src[i]._comment, sizeof(dest[i]._comment));
+			dest[i]._children.clear();
 			p[i]._children.assign(&dest[i]._children);
+			::memset(p[i]._item, 0, sizeof(p[i]._item));
+			::memset(p[i]._value, 0, sizeof(p[i]._value));
+			::memset(p[i]._comment, 0, sizeof(p[i]._comment));
+			p[i]._children.clear();
+
 		}
 
 		return 0;
@@ -290,10 +296,11 @@ const char* gnd::conf::configuration::comment() const
 
 
 // set child
-
+inline
 int gnd::conf::configuration::child_push_back(configuration* dest) {
 	return _children.push_back(dest);
 }
+inline
 int gnd::conf::configuration::child_push_front(configuration* dest) {
 	return _children.push_front(dest);
 }
@@ -462,40 +469,46 @@ int gnd::conf::configuration::show(FILE* fp, const char flags)
  * @param[in]    fp : file stream
  * @param[in] depth : nesting depth
  */
+inline
 int gnd::conf::configuration::__show__(FILE* fp, const int depth, const char flags)
 {
 	char head[32];
 	int i;
 	bool nl_flg = false;	// new line flag
 
+	// set indent depth
+	::memset(head, 0, sizeof(head));
+	for(i = 0; i < depth; i++){
+		head[i] = '\t';
+	}
 
+	// comment
 	if( _item[0] && _comment[0] ) {
+		if(fp) ::fprintf(fp, "%s", head);
 		if(fp) ::fprintf(fp, "# %s\n", _comment);
 		LogDebugf("# %s\n", _comment);
 		nl_flg = true;
 	}
 
+	// indent
+	if(fp) ::fprintf(fp, "%s", head);
+
+	// comment out null value
+	LogDebugf("%s", head);
 	if ( !_value[0] && _children.size() == 0) {
 		if(fp) ::fprintf(fp, "#");
 		LogDebug("#");
 	}
 
-
-	::memset(head, 0, sizeof(head));
-	for(i = 0; i < depth; i++){
-		head[i] = '\t';
-	}
-	if(fp) ::fprintf(fp, "%s", head);
-	LogDebugf("%s", head);
-
+	// item and value
 	if( _item[0] != '\0' ){
 		if(fp) ::fprintf(fp, "%s=", _item);
 		LogDebugf("%s=", _item);
 	}
 
 	if( _value[0] != '\0' ){
-		if(fp) ::fprintf(fp, "%s%s", _value, _item[0] ? "" : ",");
-		LogDebugf("%s%s", _value, _item[0] ? "" : ",");
+		if(fp) ::fprintf(fp, "%s%s", _value, _item[0] ? "" : "");
+		LogDebugf("%s%s", _value, _item[0] ? "" : "");
 	}
 	else if( _children.size() != 0 ){
 		if(fp) ::fprintf(fp, "{\n");
@@ -555,6 +568,7 @@ namespace gnd {
 		/**
 		 * @brief constructor
 		 */
+		inline
 		file_stream::file_stream()
 		{
 
@@ -563,6 +577,7 @@ namespace gnd {
 		/**
 		 * @brief destructor
 		 */
+		inline
 		file_stream::~file_stream()
 		{
 
