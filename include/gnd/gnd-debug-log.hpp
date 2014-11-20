@@ -8,6 +8,8 @@
 #ifndef GND_DEBUG_LOG
 #define GND_DEBUG_LOG
 
+#if 0
+
 #include <stdio.h>
 #include <string.h>
 #include <stdarg.h>
@@ -248,5 +250,7 @@ namespace GND_DEBUG_LOG_NAMESPACE3 {
 #ifdef GND_DEBUG_LOG_NAMESPACE1
 }
 #endif
+
+#endif /* if 0 */
 
 #endif /* GND_DEBUG_LOG */
