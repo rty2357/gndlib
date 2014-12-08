@@ -62,6 +62,7 @@ namespace gnd {
 		// <--- data
 	public:
 		int allocate(uint32_t n);
+		int resize(uint32_t n);
 
 		// assign
 	public:
@@ -224,6 +225,17 @@ namespace gnd {
 	inline
 	int queue<T>::allocate(uint32_t n) {
 		return __reallocate__(n);
+	}
+
+	template < typename T >
+	inline
+	int queue<T>::resize(uint32_t n) {
+		if( n > _n) {
+			while(_nalloc < n)	__reallocate__(n);
+			_n = n;
+		}
+		else if( n < _n  )		erase(n, n - _n);
+		return 0;
 	}
 
 	// ---> assign
@@ -412,6 +424,7 @@ namespace gnd {
 	inline
 	int queue<T>::pop_back(T* dest, const uint32_t n)
 	{
+		if( _n == 0 ) return -1;
 		return move(size(), dest, n);
 	}
 
@@ -425,6 +438,7 @@ namespace gnd {
 	inline
 	int queue<T>::pop_front(T* dest, const uint32_t n)
 	{
+		if( _n == 0 ) return -1;
 		return move(0, dest, n);
 	}
 
