@@ -78,6 +78,7 @@ namespace gnd {
 	public:
 		// insert
 		int insert(const uint32_t i, const T* src, const uint32_t n = 1);
+		int eject(const uint32_t i, const T* dest, const uint32_t n = 1);
 		// erase
 		int erase(const uint32_t i, const uint32_t n = 1);
 		int erase(T* p);
@@ -318,6 +319,19 @@ namespace gnd {
 		return (int)i;
 	}
 
+	/**
+	 * @brief insert data
+	 * @param[in]   i: inset index
+	 * @param[in] src: data source
+	 * @param[in]   n: size of insert data
+	 * @return < 0 fail to insert
+	 * 			insert index
+	 */
+	template < typename T >
+	inline
+	int queue<T>::eject( const uint32_t i, const T* dest, const uint32_t n ) {
+		return move(i, dest, n);
+	}
 
 
 	/**
@@ -336,7 +350,7 @@ namespace gnd {
 		gnd_error(n == 0, 0, "ineffectual argument");
 
 		// copy
-		if(dest) __copy__(dest, _data + i, n);
+		if(dest) __move__(dest, _data + i, n);
 		// move
 		if(i + n != _n)	__move__(_data + i, _data + i + n, (_n - i - n));
 		_n -= n;
